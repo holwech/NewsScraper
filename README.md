@@ -5,6 +5,9 @@ and scrape each site listed in the file.
 
 For more info read comments in `NewsScraper.py`.
 
+## Libraries
 This script uses the following libraries:
+
 https://github.com/codelucas/newspaper
+
 https://github.com/kurtmckee/feedparser
