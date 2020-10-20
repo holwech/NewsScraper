@@ -19,7 +19,13 @@ data["newspapers"] = {}
 def parse_config(fname):
     # Loads the JSON files with news sites
     with open(fname, "r") as data_file:
-        return json.load(data_file)
+        cfg = json.load(data_file)
+
+    for company, value in cfg.items():
+        if "link" not in value:
+            raise ValueError(f"Configuration item {company} missing obligatory 'link'.")
+
+    return cfg
 
 
 def _handle_rss(company, value, count, limit):
@@ -156,7 +162,10 @@ def main():
         args = [args[i] for i in range(len(args)) if i not in (idx, idx + 1)]
 
     fname = args[1]
-    config = parse_config(fname)
+    try:
+        config = parse_config(fname)
+    except Exception as err:
+        sys.exit(err)
     run(config, limit=limit)
 
 
