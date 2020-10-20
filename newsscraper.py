@@ -46,28 +46,29 @@ def _handle_rss(company, value, count, limit):
         # Check if publish date is provided, if no the article is
         # skipped.  This is done to keep consistency in the data and to
         # keep the script from crashing.
-        if hasattr(entry, "published"):
-            if count > limit:
-                break
-            article = {}
-            article["link"] = entry.link
-            date = entry.published_parsed
-            article["published"] = datetime.fromtimestamp(mktime(date)).isoformat()
-            try:
-                content = Article(entry.link)
-                content.download()
-                content.parse()
-            except Exception as err:
-                # If the download for some reason fails (ex. 404) the
-                # script will continue downloading the next article.
-                print(err)
-                print("continuing...")
-                continue
-            article["title"] = content.title
-            article["text"] = content.text
-            news_paper["articles"].append(article)
-            print(f"{count} articles downloaded from {company}, url: {entry.link}")
-            count = count + 1
+        if not hasattr(entry, "published"):
+            continue
+        if count > limit:
+            break
+        article = {}
+        article["link"] = entry.link
+        date = entry.published_parsed
+        article["published"] = datetime.fromtimestamp(mktime(date)).isoformat()
+        try:
+            content = Article(entry.link)
+            content.download()
+            content.parse()
+        except Exception as err:
+            # If the download for some reason fails (ex. 404) the
+            # script will continue downloading the next article.
+            print(err)
+            print("continuing...")
+            continue
+        article["title"] = content.title
+        article["text"] = content.text
+        news_paper["articles"].append(article)
+        print(f"{count} articles downloaded from {company}, url: {entry.link}")
+        count = count + 1
     return count, news_paper
 
 
