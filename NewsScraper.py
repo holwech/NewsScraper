@@ -1,3 +1,7 @@
+"""A script for scraping news sites and writing latest articles to
+json.
+"""
+
 import sys
 import json
 from time import mktime
@@ -30,8 +34,8 @@ def _handle_rss(company, value, count, limit):
     """
 
     fpd = fp.parse(value["rss"])
-    print("Downloading articles from ", company)
-    newsPaper = {"rss": value["rss"], "link": value["link"], "articles": []}
+    print(f"Downloading articles from {company}")
+    news_paper = {"rss": value["rss"], "link": value["link"], "articles": []}
     for entry in fpd.entries:
         # Check if publish date is provided, if no the article is
         # skipped.  This is done to keep consistency in the data and to
@@ -55,14 +59,10 @@ def _handle_rss(company, value, count, limit):
                 continue
             article["title"] = content.title
             article["text"] = content.text
-            newsPaper["articles"].append(article)
-            print(
-                "{} articles downloaded from {}, url: {}".format(
-                    count, company, entry.link
-                )
-            )
+            news_paper["articles"].append(article)
+            print(f"{count} articles downloaded from {company}, url: {entry.link}")
             count = count + 1
-    return count, newsPaper
+    return count, news_paper
 
 
 def _handle_fallback(company, value, count, limit):
@@ -72,18 +72,18 @@ def _handle_fallback(company, value, count, limit):
 
     """
 
-    print("Building site for {}".format(company))
+    print(f"Building site for {company}")
     paper = newspaper.build(value["link"], memoize_articles=False)
-    newsPaper = {"link": value["link"], "articles": []}
-    noneTypeCount = 0
+    news_paper = {"link": value["link"], "articles": []}
+    none_type_count = 0
     for content in paper.articles:
         if count > limit:
             break
         try:
             content.download()
             content.parse()
-        except Exception as e:
-            print(e)
+        except Exception as err:
+            print(err)
             print("continuing...")
             continue
         # Again, for consistency, if there is no found publish date the
@@ -92,39 +92,43 @@ def _handle_fallback(company, value, count, limit):
         # After 10 downloaded articles from the same newspaper without
         # publish date, the company will be skipped.
         if content.publish_date is None:
-            print(count, " Article has date of type None...")
-            noneTypeCount = noneTypeCount + 1
-            if noneTypeCount > 10:
+            print(f"{count} Article has date of type None...")
+            none_type_count = none_type_count + 1
+            if none_type_count > 10:
                 print("Too many noneType dates, aborting...")
-                noneTypeCount = 0
+                none_type_count = 0
                 break
             count = count + 1
             continue
-        article = {}
-        article["title"] = content.title
-        article["text"] = content.text
-        article["link"] = content.url
-        article["published"] = content.publish_date.isoformat()
-        newsPaper["articles"].append(article)
+        article = {
+            "title": content.title,
+            "text": content.text,
+            "link": content.url,
+            "published": content.publish_date.isoformat(),
+        }
+        news_paper["articles"].append(article)
         print(
-            "{} articles downloaded from {} using newspaper, url: {}".format(
-                count, company, content.url
-            )
+            f"{count} articles downloaded from {company} using newspaper, url: {content.url}"
         )
         count = count + 1
-        noneTypeCount = 0
-    return count, newsPaper
+        none_type_count = 0
+    return count, news_paper
 
 
 def run(config, limit=4):
-    # Iterate through each news company
+    """Take a config object of sites and urls, and an upper limit.
+
+    Iterate through each news company.
+
+    Write result to scraped_articles.json.
+    """
     for company, value in config.items():
         count = 1
         if "rss" in value:
-            count, newsPaper = _handle_rss(company, value, count, limit)
+            count, news_paper = _handle_rss(company, value, count, limit)
         else:
-            count, newsPaper = _handle_fallback(company, value, count, limit)
-        data["newspapers"][company] = newsPaper
+            count, news_paper = _handle_fallback(company, value, count, limit)
+        data["newspapers"][company] = news_paper
 
     # Finally it saves the articles as a JSON-file.
     try:
