@@ -1,26 +1,29 @@
 {
-  "cnn": {
-    "link": "http://edition.cnn.com/"
-  },
   "bbc": {
     "rss": "http://feeds.bbci.co.uk/news/rss.xml",
     "link": "http://www.bbc.com/"
   },
-  "theguardian": {
-    "rss": "https://www.theguardian.com/uk/rss",
-    "link": "https://www.theguardian.com/international"
-  },
   "breitbart": {
     "link": "http://www.breitbart.com/"
   },
-  "infowars": {
-    "link": "https://www.infowars.com/"
+  "cnn": {
+    "link": "http://edition.cnn.com/"
   },
   "foxnews": {
     "link": "http://www.foxnews.com/"
   },
   "nbcnews": {
     "link": "http://www.nbcnews.com/"
+  },
+  "nytimes_frontpage": {
+    "rss": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+  },
+  "nytimes_international": {
+    "rss": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+  },
+  "theguardian": {
+    "rss": "https://www.theguardian.com/uk/rss",
+    "link": "https://www.theguardian.com/international"
   },
   "washingtonpost": {
     "rss": "http://feeds.washingtonpost.com/rss/world",
