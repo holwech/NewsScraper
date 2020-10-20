@@ -30,18 +30,19 @@ The `NewsPapers.json` file should be a JSON file like this:
     "link": "http://www.breitbart.com/"
   },
   "cnn": {
+    "rss": "http://rss.cnn.com/rss/edition.rss",
     "link": "http://edition.cnn.com/"
   },
   "foxnews": {
+    "rss": "http://feeds.foxnews.com/foxnews/latest",
     "link": "http://www.foxnews.com/"
   },
-  "nbcnews": {
-    "link": "http://www.nbcnews.com/"
-  },
   "nytimes_frontpage": {
+    "link": "https://nytimes.com/",
     "rss": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
   },
   "nytimes_international": {
+    "link": "https://nytimes.com/",
     "rss": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
   },
   "theguardian": {
@@ -51,6 +52,10 @@ The `NewsPapers.json` file should be a JSON file like this:
   "washingtonpost": {
     "rss": "http://feeds.washingtonpost.com/rss/world",
     "link": "https://www.washingtonpost.com/"
+  },
+  "wsj": {
+    "rss": "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+    "link": "https://www.wsj.com"
   }
 }
 ```
