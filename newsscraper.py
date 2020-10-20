@@ -139,7 +139,7 @@ def run(config, limit=4):
     # Finally it saves the articles as a JSON-file.
     try:
         with open("scraped_articles.json", "w") as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=2)
     except Exception as err:
         print(err)
 
