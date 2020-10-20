@@ -139,10 +139,15 @@ def run(config, limit=4):
 
 
 def main():
+    """News site scraper.
+
+    Takes a command line argument containing json.
+    """
+
     args = list(sys.argv)
 
     if len(args) < 2:
-        sys.exit("Usage: NewsScraper.py NewsPapers.json")
+        sys.exit("Usage: newsscraper.py NewsPapers.json")
 
     limit = 4
     if "--limit" in args:
