@@ -1,0 +1,14 @@
+{
+  "nrk_siste": {
+    "rss": "https://www.nrk.no/nyheter/siste.rss",
+    "link": "https://nrk.no/nyheter"
+  },
+  "nrk_toppsaker": {
+    "rss": "https://www.nrk.no/toppsaker.rss",
+    "link": "https://nrk.no/"
+  },
+  "vg": {
+    "rss": "https://www.vg.no/rss/feed/forsiden/",
+    "link": "http://vg.no/"
+  }
+}

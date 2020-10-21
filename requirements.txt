@@ -1,0 +1,2 @@
+feedparser
+newspaper3k
