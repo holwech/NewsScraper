@@ -94,7 +94,7 @@ def _handle_fallback(company, url, limit):
     for content in paper.articles:
         if num_articles_downloaded >= limit:
             break
-        # After 10 articles with errors from the same newspaper, the company will be skipped.
+        # After 10 articles with errors from the same newspaper, the newspaper will be skipped.
         if error_count > 10:
             print("Too many errors for this source, aborting...")
             break
