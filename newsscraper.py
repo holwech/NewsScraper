@@ -12,8 +12,7 @@ import newspaper
 from newspaper import Article
 
 
-data = {}
-data["newspapers"] = {}
+data = {"newspapers": {}}
 
 
 def parse_config(fname):
@@ -28,7 +27,7 @@ def parse_config(fname):
     return cfg
 
 
-def _handle_rss(company, value, count, limit):
+def _handle_rss(company, value, limit):
     """If a RSS link is provided in the JSON file, this will be the first
     choice.
 
@@ -39,6 +38,7 @@ def _handle_rss(company, value, count, limit):
     attr empty in the JSON file.
     """
 
+    num_articles_downloaded = 0
     fpd = fp.parse(value["rss"])
     print(f"Downloading articles from {company}")
     news_paper = {"rss": value["rss"], "link": value["link"], "articles": []}
@@ -48,10 +48,9 @@ def _handle_rss(company, value, count, limit):
         # keep the script from crashing.
         if not hasattr(entry, "published"):
             continue
-        if count > limit:
+        if num_articles_downloaded > limit:
             break
-        article = {}
-        article["link"] = entry.link
+        article = {"link": entry.link}
         date = entry.published_parsed
         article["published"] = datetime.fromtimestamp(mktime(date)).isoformat()
         try:
@@ -67,12 +66,12 @@ def _handle_rss(company, value, count, limit):
         article["title"] = content.title
         article["text"] = content.text
         news_paper["articles"].append(article)
-        print(f"{count} articles downloaded from {company}, url: {entry.link}")
-        count = count + 1
-    return count, news_paper
+        num_articles_downloaded += 1
+        print(f"{num_articles_downloaded} articles downloaded from {company}, url: {entry.link}")
+    return news_paper
 
 
-def _handle_fallback(company, value, count, limit):
+def _handle_fallback(company, url, limit):
     """This is the fallback method if a RSS-feed link is not provided.
 
     It uses the python newspaper library to extract articles.
@@ -80,33 +79,41 @@ def _handle_fallback(company, value, count, limit):
     """
 
     print(f"Building site for {company}")
-    paper = newspaper.build(value["link"], memoize_articles=False)
-    news_paper = {"link": value["link"], "articles": []}
-    none_type_count = 0
+    try:
+        paper = newspaper.build(url, memoize_articles=False)
+    except:
+        print("Error building newspaper, aborting...")
+        return
+
+    news_paper = {"link": url, "articles": []}
+    print(f"{len(paper.articles)} articles found")
+
+    num_articles_downloaded = 0
+    error_count = 0
+
     for content in paper.articles:
-        if count > limit:
+        if num_articles_downloaded >= limit:
             break
+        # After 10 articles with errors from the same newspaper, the newspaper will be skipped.
+        if error_count > 10:
+            print("Too many errors for this source, aborting...")
+            break
+
         try:
             content.download()
             content.parse()
         except Exception as err:
+            error_count += 1
             print(err)
             print("continuing...")
             continue
-        # Again, for consistency, if there is no found publish date the
-        # article will be skipped.
-        #
-        # After 10 downloaded articles from the same newspaper without
-        # publish date, the company will be skipped.
-        if content.publish_date is None:
-            print(f"{count} Article has date of type None...")
-            none_type_count = none_type_count + 1
-            if none_type_count > 10:
-                print("Too many noneType dates, aborting...")
-                none_type_count = 0
-                break
-            count = count + 1
+
+        # For consistency, if there is no found publish date the article will be skipped.
+        if content.publish_date is None or content.publish_date == '':
+            print(f"Can't find article publish date, skipping...")
+            error_count += 1
             continue
+
         article = {
             "title": content.title,
             "text": content.text,
@@ -114,35 +121,36 @@ def _handle_fallback(company, value, count, limit):
             "published": content.publish_date.isoformat(),
         }
         news_paper["articles"].append(article)
+        num_articles_downloaded += 1
         print(
-            f"{count} articles downloaded from {company} using newspaper, url: {content.url}"
+            f"{num_articles_downloaded} articles downloaded from {company} using newspaper, url: {content.url}"
         )
-        count = count + 1
-        none_type_count = 0
-    return count, news_paper
+
+    return news_paper
 
 
-def run(config, limit=4):
+def run(config, limit):
     """Take a config object of sites and urls, and an upper limit.
 
     Iterate through each news company.
 
     Write result to scraped_articles.json.
     """
-    for company, value in config.items():
-        count = 1
+    for i, (company, value) in enumerate(config.items()):
+        print(f"NEWS SITE {i+1} OUT OF {len(config)}")
         if "rss" in value:
-            count, news_paper = _handle_rss(company, value, count, limit)
+            news_paper = _handle_rss(company, value, limit)
         else:
-            count, news_paper = _handle_fallback(company, value, count, limit)
+            url = value["link"]
+            news_paper = _handle_fallback(company, url, limit)
         data["newspapers"][company] = news_paper
 
-    # Finally it saves the articles as a JSON-file.
-    try:
-        with open("scraped_articles.json", "w") as outfile:
-            json.dump(data, outfile, indent=2)
-    except Exception as err:
-        print(err)
+        # Save collected data to file at each iteration in case of error
+        try:
+            with open("scraped_articles.json", "w") as outfile:
+                json.dump(data, outfile, indent=2)
+        except Exception as err:
+            print(err)
 
 
 def main():
@@ -156,7 +164,8 @@ def main():
     if len(args) < 2:
         sys.exit("Usage: newsscraper.py NewsPapers.json")
 
-    limit = 4
+    limit = 10
+
     if "--limit" in args:
         idx = args.index("--limit")
         limit = int(args[idx + 1])
