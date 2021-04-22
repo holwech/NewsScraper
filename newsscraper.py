@@ -38,7 +38,7 @@ def _handle_rss(company, value, limit):
     attr empty in the JSON file.
     """
 
-    count = 1
+    num_articles_downloaded = 0
     fpd = fp.parse(value["rss"])
     print(f"Downloading articles from {company}")
     news_paper = {"rss": value["rss"], "link": value["link"], "articles": []}
@@ -48,7 +48,7 @@ def _handle_rss(company, value, limit):
         # keep the script from crashing.
         if not hasattr(entry, "published"):
             continue
-        if count > limit:
+        if num_articles_downloaded > limit:
             break
         article = {"link": entry.link}
         date = entry.published_parsed
@@ -66,8 +66,8 @@ def _handle_rss(company, value, limit):
         article["title"] = content.title
         article["text"] = content.text
         news_paper["articles"].append(article)
-        print(f"{count} articles downloaded from {company}, url: {entry.link}")
-        count += 1
+        num_articles_downloaded += 1
+        print(f"{num_articles_downloaded} articles downloaded from {company}, url: {entry.link}")
     return news_paper
 
 
